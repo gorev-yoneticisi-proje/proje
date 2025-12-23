@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yönetim Paneli - Görev Yöneticisi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+    <!-- Header -->
+    <header class="admin-header">
+        <div class="container">
+            <h1>Yönetim Paneli</h1>
+            <a href="/" class="back-link">← Ana Sayfaya Dön</a>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Dashboard Stats -->
+        <div class="dashboard-stats">
+            <div class="stat-box">
+                <div class="stat-icon">📋</div>
+                <div class="stat-info">
+                    <div class="stat-value" id="adminTotalTasks">0</div>
+                    <div class="stat-label">Toplam Görev</div>
+                </div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-icon">✅</div>
+                <div class="stat-info">
+                    <div class="stat-value" id="adminCompletedTasks">0</div>
+                    <div class="stat-label">Tamamlandı</div>
+                </div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-icon">⏳</div>
+                <div class="stat-info">
+                    <div class="stat-value" id="adminPendingTasks">0</div>
+                    <div class="stat-label">Bekliyor</div>
+                </div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-icon">📁</div>
+                <div class="stat-info">
+                    <div class="stat-value" id="adminTotalCategories">0</div>
+                    <div class="stat-label">Kategori</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="admin-tabs">
+            <button class="tab-btn active" data-tab="tasks">Görev Yönetimi</button>
+            <button class="tab-btn" data-tab="categories">Kategori Yönetimi</button>
+            <button class="tab-btn" data-tab="database">Veritabanı</button>
+        </div>
+
+        <!-- Tasks Tab -->
+        <div id="tasks-tab" class="tab-content active">
+            <div class="section-header">
+                <h2>Görevler</h2>
+                <button id="deleteAllTasksBtn" class="btn btn-danger">Tüm Görevleri Sil</button>
+            </div>
+
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Başlık</th>
+                            <th>Kategori</th>
+                            <th>Öncelik</th>
+                            <th>Durum</th>
+                            <th>Bitiş</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tasksTableBody">
+                        <tr><td colspan="7" class="loading-cell">Yükleniyor...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Categories Tab -->
+        <div id="categories-tab" class="tab-content">
+            <div class="section-header">
+                <h2>Kategoriler</h2>
+            </div>
+
+            <div class="category-form-card">
+                <h3>Yeni Kategori Ekle</h3>
+                <form id="categoryForm" class="inline-form">
+                    <input type="text" id="categoryName" placeholder="Kategori adı..." required>
+                    <input type="color" id="categoryColor" value="#3498db">
+                    <button type="submit" class="btn btn-primary">Ekle</button>
+                </form>
+            </div>
+
+            <div id="categoriesGrid" class="categories-grid">
+                <p>Yükleniyor...</p>
+            </div>
+        </div>
+
+        <!-- Database Tab -->
+        <div id="database-tab" class="tab-content">
+            <div class="section-header">
+                <h2>Veritabanı Yönetimi</h2>
+            </div>
+
+            <div class="database-actions">
+                <div class="action-card">
+                    <h3>Tüm Görevleri Sil</h3>
+                    <p>Tüm görevler silinecek ancak kategoriler korunacaktır.</p>
+                    <button id="clearTasksBtn" class="btn btn-warning">Görevleri Temizle</button>
+                </div>
+
+                <div class="action-card">
+                    <h3>Veritabanını Sıfırla</h3>
+                    <p><strong>DİKKAT:</strong> Tüm veriler silinir ve varsayılan kategoriler yüklenir.</p>
+                    <button id="resetDatabaseBtn" class="btn btn-danger">Veritabanını Sıfırla</button>
+                </div>
+
+                <div class="action-card">
+                    <h3>Veritabanı Bilgisi</h3>
+                    <p>Toplam Görev: <strong id="dbTotalTasks">0</strong></p>
+                    <p>Toplam Kategori: <strong id="dbTotalCategories">0</strong></p>
+                    <p>Son Güncelleme: <strong id="dbLastUpdate">-</strong></p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Onay Modalı -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <h3 id="confirmTitle">Onay</h3>
+            <p id="confirmMessage">Bu işlemi gerçekleştirmek istediğinizden emin misiniz?</p>
+            <div class="modal-actions">
+                <button id="cancelBtn" class="btn btn-secondary">İptal</button>
+                <button id="confirmBtn" class="btn btn-danger">Evet, Sil</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="adminToast" class="toast"></div>
+
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+</body>
+</html>
