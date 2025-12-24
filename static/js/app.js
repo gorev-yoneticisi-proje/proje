@@ -25,14 +25,24 @@ const elements = {
     totalTasks: document.getElementById('totalTasks'),
     completedTasks: document.getElementById('completedTasks'),
     pendingTasks: document.getElementById('pendingTasks'),
-    progressFill: document.getElementById('progressFill'),
     progressPercent: document.getElementById('progressPercent'),
+    progressRing: document.getElementById('progressRing'),
+    taskCount: document.getElementById('taskCount'),
+
+    // Mobile stats
+    mobileTotalTasks: document.getElementById('mobileTotalTasks'),
+    mobileCompletedTasks: document.getElementById('mobileCompletedTasks'),
+    mobilePendingTasks: document.getElementById('mobilePendingTasks'),
 
     filterCategory: document.getElementById('filterCategory'),
     filterStatus: document.getElementById('filterStatus'),
     filterPriority: document.getElementById('filterPriority'),
 
-    toast: document.getElementById('toast')
+    toast: document.getElementById('toast'),
+
+    // Mobile menu
+    mobileMenuBtn: document.getElementById('mobileMenuBtn'),
+    mobileMenu: document.getElementById('mobileMenu')
 };
 
 // Initialize
@@ -42,7 +52,39 @@ async function init() {
     await loadCategories();
     await loadTasks();
     setupEventListeners();
+    setupMobileMenu();
     checkEditMode();
+}
+
+// Mobile Menu Setup
+function setupMobileMenu() {
+    if (elements.mobileMenuBtn && elements.mobileMenu) {
+        elements.mobileMenuBtn.addEventListener('click', function() {
+            elements.mobileMenu.classList.toggle('active');
+
+            const spans = elements.mobileMenuBtn.querySelectorAll('span');
+            if (elements.mobileMenu.classList.contains('active')) {
+                spans[0].style.transform = 'rotate(45deg) translate(5px, 5px)';
+                spans[1].style.opacity = '0';
+                spans[2].style.transform = 'rotate(-45deg) translate(5px, -5px)';
+            } else {
+                spans[0].style.transform = 'none';
+                spans[1].style.opacity = '1';
+                spans[2].style.transform = 'none';
+            }
+        });
+
+        // Close menu on link click
+        elements.mobileMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', function() {
+                elements.mobileMenu.classList.remove('active');
+                const spans = elements.mobileMenuBtn.querySelectorAll('span');
+                spans[0].style.transform = 'none';
+                spans[1].style.opacity = '1';
+                spans[2].style.transform = 'none';
+            });
+        });
+    }
 }
 
 // Event Listeners
@@ -177,11 +219,28 @@ function updateStats() {
     const pending = state.tasks.filter(t => t.durum === 'beklemede').length;
     const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
 
-    elements.totalTasks.textContent = total;
-    elements.completedTasks.textContent = completed;
-    elements.pendingTasks.textContent = pending;
-    elements.progressFill.style.width = `${percent}%`;
-    elements.progressPercent.textContent = percent;
+    // Update navbar stats
+    if (elements.totalTasks) elements.totalTasks.textContent = total;
+    if (elements.completedTasks) elements.completedTasks.textContent = completed;
+    if (elements.pendingTasks) elements.pendingTasks.textContent = pending;
+
+    // Update mobile stats
+    if (elements.mobileTotalTasks) elements.mobileTotalTasks.textContent = total;
+    if (elements.mobileCompletedTasks) elements.mobileCompletedTasks.textContent = completed;
+    if (elements.mobilePendingTasks) elements.mobilePendingTasks.textContent = pending;
+
+    // Update progress ring (circular)
+    if (elements.progressRing) {
+        const circumference = 2 * Math.PI * 45; // r=45
+        const offset = circumference - (percent / 100) * circumference;
+        elements.progressRing.style.strokeDashoffset = offset;
+    }
+
+    // Update progress percent text
+    if (elements.progressPercent) elements.progressPercent.textContent = percent;
+
+    // Update task count
+    if (elements.taskCount) elements.taskCount.textContent = `${total} görev`;
 }
 
 // Form Submit

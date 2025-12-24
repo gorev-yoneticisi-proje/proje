@@ -1,4 +1,7 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for
+from functools import wraps
+import json
+import os
 from database.db import (
     init_db, reset_db,
     get_all_tasks, get_task_by_id, create_task, update_task, delete_task, delete_all_tasks, get_task_stats,
@@ -6,7 +9,49 @@ from database.db import (
     get_dashboard_data
 )
 
+# Config dosyasını yükle
+CONFIG_PATH = os.path.join(os.path.dirname(__file__), 'config.json')
+
+def load_config():
+    """Config dosyasını yükle"""
+    try:
+        with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {
+            "users": [{"email": "admin@example.com", "password": "admin123", "name": "Admin"}],
+            "secret_key": "default-secret-key"
+        }
+
+config = load_config()
+
 app = Flask(__name__)
+app.secret_key = config.get('secret_key', 'default-secret-key')
+
+def get_user_by_email(email):
+    """E-posta ile kullanıcı bul"""
+    for user in config.get('users', []):
+        if user['email'] == email:
+            return user
+    return None
+
+# Login kontrolü decorator
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('logged_in'):
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+# API için login kontrolü
+def api_login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('logged_in'):
+            return jsonify({'basarili': False, 'hata': 'Giriş yapmanız gerekiyor'}), 401
+        return f(*args, **kwargs)
+    return decorated_function
 
 # Veritabanını başlat
 init_db()
@@ -17,10 +62,44 @@ init_db()
 
 @app.route('/')
 def index():
-    """Ana sayfa"""
+    """Landing sayfası"""
     return render_template('index.html')
 
+@app.route('/app')
+def app_page():
+    """Uygulama sayfası"""
+    return render_template('app.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    """Giriş sayfası"""
+    if session.get('logged_in'):
+        return redirect(url_for('admin'))
+
+    error = None
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        user = get_user_by_email(username)
+        if user and user['password'] == password:
+            session['logged_in'] = True
+            session['email'] = user['email']
+            session['name'] = user.get('name', 'Kullanıcı')
+            return redirect(url_for('admin'))
+        else:
+            error = 'Kullanıcı adı veya şifre hatalı!'
+
+    return render_template('login.html', error=error)
+
+@app.route('/logout')
+def logout():
+    """Çıkış yap"""
+    session.clear()
+    return redirect(url_for('index'))
+
 @app.route('/admin')
+@login_required
 def admin():
     """Admin paneli"""
     return render_template('admin.html')
@@ -210,6 +289,7 @@ def api_delete_category(category_id):
 # ============================================
 
 @app.route('/api/admin/dashboard', methods=['GET'])
+@api_login_required
 def api_admin_dashboard():
     """Admin dashboard verilerini getir"""
     try:
@@ -219,6 +299,7 @@ def api_admin_dashboard():
         return jsonify({'basarili': False, 'hata': str(e)}), 500
 
 @app.route('/api/admin/tasks/all', methods=['DELETE'])
+@api_login_required
 def api_delete_all_tasks():
     """Tüm görevleri sil"""
     try:
@@ -231,6 +312,7 @@ def api_delete_all_tasks():
         return jsonify({'basarili': False, 'hata': str(e)}), 500
 
 @app.route('/api/admin/reset', methods=['POST'])
+@api_login_required
 def api_reset_database():
     """Veritabanını sıfırla"""
     try:

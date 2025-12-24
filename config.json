@@ -1,0 +1,15 @@
+{
+    "users": [
+        {
+            "email": "s230307026@ankarabilim.edu.tr",
+            "password": "admin123",
+            "name": "Enes"
+        },
+        {
+            "email": "user@example.com",
+            "password": "user123",
+            "name": "Kullanıcı"
+        }
+    ],
+    "secret_key": "gorev-yoneticisi-gizli-anahtar-2025"
+}

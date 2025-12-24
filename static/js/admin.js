@@ -17,6 +17,10 @@ const elements = {
     adminPendingTasks: document.getElementById('adminPendingTasks'),
     adminTotalCategories: document.getElementById('adminTotalCategories'),
 
+    // Dashboard
+    recentTasksList: document.getElementById('recentTasksList'),
+    categoriesOverview: document.getElementById('categoriesOverview'),
+
     // Tables
     tasksTableBody: document.getElementById('tasksTableBody'),
     categoriesGrid: document.getElementById('categoriesGrid'),
@@ -42,9 +46,15 @@ const elements = {
     confirmMessage: document.getElementById('confirmMessage'),
     confirmBtn: document.getElementById('confirmBtn'),
     cancelBtn: document.getElementById('cancelBtn'),
+    modalClose: document.getElementById('modalClose'),
 
     // Toast
-    toast: document.getElementById('adminToast')
+    toast: document.getElementById('adminToast'),
+
+    // Sidebar & Mobile
+    sidebar: document.querySelector('.sidebar'),
+    menuToggle: document.getElementById('menuToggle'),
+    sidebarOverlay: document.getElementById('sidebarOverlay')
 };
 
 // Initialize
@@ -52,35 +62,94 @@ document.addEventListener('DOMContentLoaded', init);
 
 async function init() {
     await loadDashboardData();
-    setupTabs();
+    setupSidebarNav();
+    setupMobileMenu();
     setupEventListeners();
 }
 
-// Setup Tabs
-function setupTabs() {
-    const tabBtns = document.querySelectorAll('.tab-btn');
+// Setup Sidebar Navigation
+function setupSidebarNav() {
+    const navItems = document.querySelectorAll('.nav-item');
     const tabContents = document.querySelectorAll('.tab-content');
 
-    tabBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const tabName = btn.dataset.tab;
+    navItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            const tabName = item.dataset.tab;
 
-            tabBtns.forEach(b => b.classList.remove('active'));
-            tabContents.forEach(c => c.classList.remove('active'));
+            // Update nav items
+            navItems.forEach(nav => nav.classList.remove('active'));
+            item.classList.add('active');
 
-            btn.classList.add('active');
+            // Update tab contents
+            tabContents.forEach(content => content.classList.remove('active'));
             document.getElementById(`${tabName}-tab`).classList.add('active');
+
+            // Close mobile sidebar
+            closeMobileSidebar();
+        });
+    });
+
+    // Handle "View All" links
+    document.querySelectorAll('.view-all').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const tabName = link.dataset.tab;
+
+            // Find and click the corresponding nav item
+            const targetNav = document.querySelector(`.nav-item[data-tab="${tabName}"]`);
+            if (targetNav) {
+                targetNav.click();
+            }
         });
     });
 }
 
+// Setup Mobile Menu
+function setupMobileMenu() {
+    if (elements.menuToggle) {
+        elements.menuToggle.addEventListener('click', toggleMobileSidebar);
+    }
+
+    if (elements.sidebarOverlay) {
+        elements.sidebarOverlay.addEventListener('click', closeMobileSidebar);
+    }
+}
+
+function toggleMobileSidebar() {
+    elements.sidebar.classList.toggle('active');
+    elements.sidebarOverlay.classList.toggle('active');
+    elements.menuToggle.classList.toggle('active');
+}
+
+function closeMobileSidebar() {
+    elements.sidebar.classList.remove('active');
+    elements.sidebarOverlay.classList.remove('active');
+    if (elements.menuToggle) {
+        elements.menuToggle.classList.remove('active');
+    }
+}
+
 // Setup Event Listeners
 function setupEventListeners() {
-    elements.categoryForm.addEventListener('submit', handleAddCategory);
-    elements.deleteAllTasksBtn.addEventListener('click', handleDeleteAllTasks);
-    elements.clearTasksBtn.addEventListener('click', handleClearTasks);
-    elements.resetDatabaseBtn.addEventListener('click', handleResetDatabase);
-    elements.cancelBtn.addEventListener('click', hideConfirmModal);
+    if (elements.categoryForm) {
+        elements.categoryForm.addEventListener('submit', handleAddCategory);
+    }
+    if (elements.deleteAllTasksBtn) {
+        elements.deleteAllTasksBtn.addEventListener('click', handleDeleteAllTasks);
+    }
+    if (elements.clearTasksBtn) {
+        elements.clearTasksBtn.addEventListener('click', handleClearTasks);
+    }
+    if (elements.resetDatabaseBtn) {
+        elements.resetDatabaseBtn.addEventListener('click', handleResetDatabase);
+    }
+    if (elements.cancelBtn) {
+        elements.cancelBtn.addEventListener('click', hideConfirmModal);
+    }
+    if (elements.modalClose) {
+        elements.modalClose.addEventListener('click', hideConfirmModal);
+    }
 }
 
 // Load Dashboard Data
@@ -95,6 +164,8 @@ async function loadDashboardData() {
             adminState.categories = data.dashboard.kategoriler;
 
             renderStats();
+            renderRecentTasks();
+            renderCategoriesOverview();
             renderTasksTable();
             renderCategories();
             renderDatabaseInfo();
@@ -108,14 +179,73 @@ async function loadDashboardData() {
 // Render Stats
 function renderStats() {
     const stats = adminState.stats;
-    elements.adminTotalTasks.textContent = stats.toplam || 0;
-    elements.adminCompletedTasks.textContent = stats.tamamlanan || 0;
-    elements.adminPendingTasks.textContent = stats.bekleyen || 0;
-    elements.adminTotalCategories.textContent = adminState.categories.length || 0;
+    if (elements.adminTotalTasks) elements.adminTotalTasks.textContent = stats.toplam || 0;
+    if (elements.adminCompletedTasks) elements.adminCompletedTasks.textContent = stats.tamamlanan || 0;
+    if (elements.adminPendingTasks) elements.adminPendingTasks.textContent = stats.bekleyen || 0;
+    if (elements.adminTotalCategories) elements.adminTotalCategories.textContent = adminState.categories.length || 0;
+}
+
+// Render Recent Tasks (Dashboard)
+function renderRecentTasks() {
+    if (!elements.recentTasksList) return;
+
+    if (adminState.tasks.length === 0) {
+        elements.recentTasksList.innerHTML = '<p class="empty-text">Henüz görev yok</p>';
+        return;
+    }
+
+    // Show only last 5 tasks
+    const recentTasks = adminState.tasks.slice(0, 5);
+
+    const tasksHTML = recentTasks.map(task => {
+        const statusClass = task.durum === 'tamamlandı' ? 'completed' : task.durum === 'devam-ediyor' ? 'in-progress' : 'pending';
+        const priorityClass = task.oncelik === 'yüksek' ? 'high' : task.oncelik === 'düşük' ? 'low' : 'medium';
+
+        return `
+            <div class="recent-task-item">
+                <div class="task-info">
+                    <span class="task-title">${escapeHtml(task.baslik)}</span>
+                    <div class="task-meta">
+                        ${task.kategori_adi ? `<span class="task-category" style="color: ${task.kategori_renk}">${task.kategori_adi}</span>` : ''}
+                        <span class="task-priority ${priorityClass}">${capitalizeFirst(task.oncelik)}</span>
+                    </div>
+                </div>
+                <span class="task-status ${statusClass}">${formatStatus(task.durum)}</span>
+            </div>
+        `;
+    }).join('');
+
+    elements.recentTasksList.innerHTML = tasksHTML;
+}
+
+// Render Categories Overview (Dashboard)
+function renderCategoriesOverview() {
+    if (!elements.categoriesOverview) return;
+
+    if (adminState.categories.length === 0) {
+        elements.categoriesOverview.innerHTML = '<p class="empty-text">Henüz kategori yok</p>';
+        return;
+    }
+
+    const categoriesHTML = adminState.categories.map(cat => {
+        const taskCount = adminState.stats.kategoriler?.find(c => c.ad === cat.ad)?.gorev_sayisi || 0;
+
+        return `
+            <div class="category-overview-item">
+                <div class="category-color" style="background: ${cat.renk}"></div>
+                <span class="category-name">${escapeHtml(cat.ad)}</span>
+                <span class="category-count">${taskCount} görev</span>
+            </div>
+        `;
+    }).join('');
+
+    elements.categoriesOverview.innerHTML = categoriesHTML;
 }
 
 // Render Tasks Table
 function renderTasksTable() {
+    if (!elements.tasksTableBody) return;
+
     if (adminState.tasks.length === 0) {
         elements.tasksTableBody.innerHTML = '<tr><td colspan="7" class="loading-cell">Görev bulunamadı</td></tr>';
         return;
@@ -149,8 +279,10 @@ function renderTasksTable() {
 
 // Render Categories
 function renderCategories() {
+    if (!elements.categoriesGrid) return;
+
     if (adminState.categories.length === 0) {
-        elements.categoriesGrid.innerHTML = '<p>Kategori bulunamadı</p>';
+        elements.categoriesGrid.innerHTML = '<p class="empty-text">Kategori bulunamadı</p>';
         return;
     }
 
@@ -161,7 +293,7 @@ function renderCategories() {
             <div class="category-card" style="border-left-color: ${cat.renk}">
                 <div class="category-header">
                     <div class="category-name">${escapeHtml(cat.ad)}</div>
-                    <div style="width: 24px; height: 24px; border-radius: 50%; background: ${cat.renk}"></div>
+                    <div class="category-color-dot" style="background: ${cat.renk}"></div>
                 </div>
                 <div class="category-count">${taskCount} görev</div>
                 <div class="category-actions">
@@ -177,9 +309,9 @@ function renderCategories() {
 
 // Render Database Info
 function renderDatabaseInfo() {
-    elements.dbTotalTasks.textContent = adminState.stats.toplam || 0;
-    elements.dbTotalCategories.textContent = adminState.categories.length || 0;
-    elements.dbLastUpdate.textContent = new Date().toLocaleString('tr-TR');
+    if (elements.dbTotalTasks) elements.dbTotalTasks.textContent = adminState.stats.toplam || 0;
+    if (elements.dbTotalCategories) elements.dbTotalCategories.textContent = adminState.categories.length || 0;
+    if (elements.dbLastUpdate) elements.dbLastUpdate.textContent = new Date().toLocaleString('tr-TR');
 }
 
 // Add Category
@@ -203,7 +335,7 @@ async function handleAddCategory(e) {
         if (data.basarili) {
             showToast(data.mesaj, 'success');
             elements.categoryForm.reset();
-            elements.categoryColor.value = '#3498db';
+            elements.categoryColor.value = '#667eea';
             await loadDashboardData();
         } else {
             showToast(data.hata, 'error');
@@ -299,7 +431,7 @@ window.deleteTaskAdmin = function(id) {
 
 // Edit Task Admin
 window.editTaskAdmin = function(id) {
-    window.location.href = `/?edit=${id}`;
+    window.location.href = `/app?edit=${id}`;
 };
 
 // Delete All Tasks
@@ -368,7 +500,7 @@ function showConfirmModal(title, message, callback) {
     adminState.confirmCallback = callback;
     elements.confirmModal.classList.add('show');
 
-    // Set up confirm button - save callback reference before hiding
+    // Set up confirm button
     elements.confirmBtn.onclick = async () => {
         const callbackToExecute = adminState.confirmCallback;
         hideConfirmModal();
@@ -383,12 +515,22 @@ function showConfirmModal(title, message, callback) {
             hideConfirmModal();
         }
     };
+
+    // Close on escape key
+    document.addEventListener('keydown', handleEscapeKey);
+}
+
+function handleEscapeKey(e) {
+    if (e.key === 'Escape') {
+        hideConfirmModal();
+    }
 }
 
 // Hide Confirmation Modal
 function hideConfirmModal() {
     elements.confirmModal.classList.remove('show');
     adminState.confirmCallback = null;
+    document.removeEventListener('keydown', handleEscapeKey);
 }
 
 // Show Toast

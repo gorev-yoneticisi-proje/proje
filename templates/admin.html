@@ -6,142 +6,329 @@
     <title>Yönetim Paneli - Görev Yöneticisi</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
 </head>
 <body>
-    <!-- Header -->
-    <header class="admin-header">
-        <div class="container">
-            <h1>Yönetim Paneli</h1>
-            <a href="/" class="back-link">← Ana Sayfaya Dön</a>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="/" class="sidebar-logo">
+                <span class="logo-icon">✓</span>
+                <span class="logo-text">Görev Yöneticisi</span>
+            </a>
         </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active" data-tab="dashboard">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7"/>
+                    <rect x="14" y="3" width="7" height="7"/>
+                    <rect x="14" y="14" width="7" height="7"/>
+                    <rect x="3" y="14" width="7" height="7"/>
+                </svg>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-item" data-tab="tasks">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 11l3 3L22 4"/>
+                    <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+                </svg>
+                <span>Görevler</span>
+            </a>
+            <a href="#" class="nav-item" data-tab="categories">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
+                </svg>
+                <span>Kategoriler</span>
+            </a>
+            <a href="#" class="nav-item" data-tab="database">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                </svg>
+                <span>Veritabanı</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar">{{ session.name[0] }}</div>
+                <div class="user-details">
+                    <span class="user-name">{{ session.name }}</span>
+                    <span class="user-role">Yönetici</span>
+                </div>
+            </div>
+            <a href="/logout" class="logout-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+        <button class="menu-toggle" id="menuToggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <span class="mobile-title">Yönetim Paneli</span>
+        <a href="/logout" class="mobile-logout">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+        </a>
     </header>
 
-    <main class="container">
-        <!-- Dashboard Stats -->
-        <div class="dashboard-stats">
-            <div class="stat-box">
-                <div class="stat-icon">📋</div>
-                <div class="stat-info">
-                    <div class="stat-value" id="adminTotalTasks">0</div>
-                    <div class="stat-label">Toplam Görev</div>
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Dashboard Tab -->
+        <div id="dashboard-tab" class="tab-content active">
+            <div class="page-header">
+                <div class="page-header-content">
+                    <h1>Hoş Geldin, {{ session.name }}!</h1>
+                    <p>Görev yönetim panelinize genel bakış</p>
                 </div>
+                <a href="/app" class="btn btn-primary">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                    Yeni Görev Ekle
+                </a>
             </div>
-            <div class="stat-box">
-                <div class="stat-icon">✅</div>
-                <div class="stat-info">
-                    <div class="stat-value" id="adminCompletedTasks">0</div>
-                    <div class="stat-label">Tamamlandı</div>
-                </div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-icon">⏳</div>
-                <div class="stat-info">
-                    <div class="stat-value" id="adminPendingTasks">0</div>
-                    <div class="stat-label">Bekliyor</div>
-                </div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-icon">📁</div>
-                <div class="stat-info">
-                    <div class="stat-value" id="adminTotalCategories">0</div>
-                    <div class="stat-label">Kategori</div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Tabs -->
-        <div class="admin-tabs">
-            <button class="tab-btn active" data-tab="tasks">Görev Yönetimi</button>
-            <button class="tab-btn" data-tab="categories">Kategori Yönetimi</button>
-            <button class="tab-btn" data-tab="database">Veritabanı</button>
+            <div class="dashboard-stats">
+                <div class="stat-card stat-primary">
+                    <div class="stat-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 11l3 3L22 4"/>
+                            <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="adminTotalTasks">0</span>
+                        <span class="stat-label">Toplam Görev</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-success">
+                    <div class="stat-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="adminCompletedTasks">0</span>
+                        <span class="stat-label">Tamamlandı</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-warning">
+                    <div class="stat-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="adminPendingTasks">0</span>
+                        <span class="stat-label">Bekliyor</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-info">
+                    <div class="stat-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="adminTotalCategories">0</span>
+                        <span class="stat-label">Kategori</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="card recent-tasks-card">
+                    <div class="card-header">
+                        <h3>Son Görevler</h3>
+                        <a href="#" class="view-all" data-tab="tasks">Tümünü Gör</a>
+                    </div>
+                    <div class="card-body" id="recentTasksList">
+                        <p class="empty-text">Yükleniyor...</p>
+                    </div>
+                </div>
+                <div class="card categories-overview-card">
+                    <div class="card-header">
+                        <h3>Kategoriler</h3>
+                        <a href="#" class="view-all" data-tab="categories">Tümünü Gör</a>
+                    </div>
+                    <div class="card-body" id="categoriesOverview">
+                        <p class="empty-text">Yükleniyor...</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Tasks Tab -->
-        <div id="tasks-tab" class="tab-content active">
-            <div class="section-header">
-                <h2>Görevler</h2>
-                <button id="deleteAllTasksBtn" class="btn btn-danger">Tüm Görevleri Sil</button>
+        <div id="tasks-tab" class="tab-content">
+            <div class="page-header">
+                <div class="page-header-content">
+                    <h1>Görev Yönetimi</h1>
+                    <p>Tüm görevleri görüntüleyin ve yönetin</p>
+                </div>
+                <button id="deleteAllTasksBtn" class="btn btn-danger">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                    </svg>
+                    Tümünü Sil
+                </button>
             </div>
 
-            <div class="table-responsive">
-                <table class="admin-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Başlık</th>
-                            <th>Kategori</th>
-                            <th>Öncelik</th>
-                            <th>Durum</th>
-                            <th>Bitiş</th>
-                            <th>İşlemler</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tasksTableBody">
-                        <tr><td colspan="7" class="loading-cell">Yükleniyor...</td></tr>
-                    </tbody>
-                </table>
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Başlık</th>
+                                <th>Kategori</th>
+                                <th>Öncelik</th>
+                                <th>Durum</th>
+                                <th>Bitiş</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tasksTableBody">
+                            <tr><td colspan="7" class="loading-cell">Yükleniyor...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
         <!-- Categories Tab -->
         <div id="categories-tab" class="tab-content">
-            <div class="section-header">
-                <h2>Kategoriler</h2>
+            <div class="page-header">
+                <div class="page-header-content">
+                    <h1>Kategori Yönetimi</h1>
+                    <p>Görev kategorilerini düzenleyin</p>
+                </div>
             </div>
 
-            <div class="category-form-card">
-                <h3>Yeni Kategori Ekle</h3>
-                <form id="categoryForm" class="inline-form">
-                    <input type="text" id="categoryName" placeholder="Kategori adı..." required>
-                    <input type="color" id="categoryColor" value="#3498db">
-                    <button type="submit" class="btn btn-primary">Ekle</button>
-                </form>
+            <div class="card category-form-card">
+                <div class="card-header">
+                    <h3>Yeni Kategori Ekle</h3>
+                </div>
+                <div class="card-body">
+                    <form id="categoryForm" class="category-form">
+                        <div class="form-group">
+                            <label for="categoryName">Kategori Adı</label>
+                            <input type="text" id="categoryName" placeholder="Örn: İş, Kişisel, Alışveriş..." required>
+                        </div>
+                        <div class="form-group">
+                            <label for="categoryColor">Renk</label>
+                            <input type="color" id="categoryColor" value="#667eea">
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 5v14M5 12h14"/>
+                            </svg>
+                            Ekle
+                        </button>
+                    </form>
+                </div>
             </div>
 
             <div id="categoriesGrid" class="categories-grid">
-                <p>Yükleniyor...</p>
+                <p class="empty-text">Yükleniyor...</p>
             </div>
         </div>
 
         <!-- Database Tab -->
         <div id="database-tab" class="tab-content">
-            <div class="section-header">
-                <h2>Veritabanı Yönetimi</h2>
+            <div class="page-header">
+                <div class="page-header-content">
+                    <h1>Veritabanı Yönetimi</h1>
+                    <p>Veritabanı işlemlerini gerçekleştirin</p>
+                </div>
             </div>
 
-            <div class="database-actions">
-                <div class="action-card">
+            <div class="database-grid">
+                <div class="card action-card">
+                    <div class="action-icon warning">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"/>
+                            <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                        </svg>
+                    </div>
                     <h3>Tüm Görevleri Sil</h3>
                     <p>Tüm görevler silinecek ancak kategoriler korunacaktır.</p>
                     <button id="clearTasksBtn" class="btn btn-warning">Görevleri Temizle</button>
                 </div>
 
-                <div class="action-card">
+                <div class="card action-card">
+                    <div class="action-icon danger">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                            <line x1="12" y1="9" x2="12" y2="13"/>
+                            <line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                    </div>
                     <h3>Veritabanını Sıfırla</h3>
                     <p><strong>DİKKAT:</strong> Tüm veriler silinir ve varsayılan kategoriler yüklenir.</p>
                     <button id="resetDatabaseBtn" class="btn btn-danger">Veritabanını Sıfırla</button>
                 </div>
 
-                <div class="action-card">
+                <div class="card info-card">
+                    <div class="action-icon info">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="16" x2="12" y2="12"/>
+                            <line x1="12" y1="8" x2="12.01" y2="8"/>
+                        </svg>
+                    </div>
                     <h3>Veritabanı Bilgisi</h3>
-                    <p>Toplam Görev: <strong id="dbTotalTasks">0</strong></p>
-                    <p>Toplam Kategori: <strong id="dbTotalCategories">0</strong></p>
-                    <p>Son Güncelleme: <strong id="dbLastUpdate">-</strong></p>
+                    <div class="info-list">
+                        <div class="info-item">
+                            <span class="info-label">Toplam Görev</span>
+                            <span class="info-value" id="dbTotalTasks">0</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Toplam Kategori</span>
+                            <span class="info-value" id="dbTotalCategories">0</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Son Güncelleme</span>
+                            <span class="info-value" id="dbLastUpdate">-</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
 
+    <!-- Mobile Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <!-- Onay Modalı -->
     <div id="confirmModal" class="modal">
         <div class="modal-content">
-            <h3 id="confirmTitle">Onay</h3>
+            <div class="modal-header">
+                <h3 id="confirmTitle">Onay</h3>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
             <p id="confirmMessage">Bu işlemi gerçekleştirmek istediğinizden emin misiniz?</p>
             <div class="modal-actions">
                 <button id="cancelBtn" class="btn btn-secondary">İptal</button>
-                <button id="confirmBtn" class="btn btn-danger">Evet, Sil</button>
+                <button id="confirmBtn" class="btn btn-danger">Evet, Devam Et</button>
             </div>
         </div>
     </div>

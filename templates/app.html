@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uygulama - Görev Yöneticisi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="/" class="logo">
+                <span class="logo-icon">✓</span>
+                <span class="logo-text">Görev Yöneticisi</span>
+            </a>
+            <div class="nav-center">
+                <div class="nav-stats">
+                    <div class="nav-stat">
+                        <span class="stat-number" id="totalTasks">0</span>
+                        <span class="stat-label">Toplam</span>
+                    </div>
+                    <div class="nav-stat-divider"></div>
+                    <div class="nav-stat">
+                        <span class="stat-number" id="completedTasks">0</span>
+                        <span class="stat-label">Bitti</span>
+                    </div>
+                    <div class="nav-stat-divider"></div>
+                    <div class="nav-stat">
+                        <span class="stat-number" id="pendingTasks">0</span>
+                        <span class="stat-label">Bekliyor</span>
+                    </div>
+                </div>
+            </div>
+            <div class="nav-links">
+                <a href="/">Ana Sayfa</a>
+                <a href="/admin" class="nav-btn">Yönetim</a>
+            </div>
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-stats">
+            <div class="nav-stat">
+                <span class="stat-number" id="mobileTotalTasks">0</span>
+                <span class="stat-label">Toplam</span>
+            </div>
+            <div class="nav-stat">
+                <span class="stat-number" id="mobileCompletedTasks">0</span>
+                <span class="stat-label">Bitti</span>
+            </div>
+            <div class="nav-stat">
+                <span class="stat-number" id="mobilePendingTasks">0</span>
+                <span class="stat-label">Bekliyor</span>
+            </div>
+        </div>
+        <a href="/">Ana Sayfa</a>
+        <a href="/admin" class="nav-btn">Yönetim</a>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="page-header-content">
+                    <h1>Görevlerim</h1>
+                    <p>Görevlerinizi yönetin ve ilerlemenizi takip edin</p>
+                </div>
+                <div class="progress-circle" id="progressCircle">
+                    <svg viewBox="0 0 100 100">
+                        <circle class="progress-bg" cx="50" cy="50" r="45"/>
+                        <circle class="progress-fill" cx="50" cy="50" r="45" id="progressRing"/>
+                    </svg>
+                    <div class="progress-text">
+                        <span id="progressPercent">0</span>%
+                    </div>
+                </div>
+            </div>
+
+            <div class="app-grid">
+                <!-- Left Column - Form and Filters -->
+                <div class="app-sidebar">
+                    <!-- Görev Ekleme Formu -->
+                    <section class="card form-card">
+                        <div class="card-header">
+                            <h2>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="12" y1="8" x2="12" y2="16"/>
+                                    <line x1="8" y1="12" x2="16" y2="12"/>
+                                </svg>
+                                Yeni Görev
+                            </h2>
+                        </div>
+                        <form id="taskForm" class="task-form">
+                            <div class="form-group">
+                                <label for="baslik">Başlık *</label>
+                                <input type="text" id="baslik" name="baslik" required placeholder="Görev başlığı yazın...">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="aciklama">Açıklama</label>
+                                <textarea id="aciklama" name="aciklama" rows="3" placeholder="Detayları ekleyin..."></textarea>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="kategori">Kategori</label>
+                                    <select id="kategori" name="kategori_id">
+                                        <option value="">Seçiniz</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="oncelik">Öncelik</label>
+                                    <select id="oncelik" name="oncelik">
+                                        <option value="düşük">Düşük</option>
+                                        <option value="orta" selected>Orta</option>
+                                        <option value="yüksek">Yüksek</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="durum">Durum</label>
+                                    <select id="durum" name="durum">
+                                        <option value="beklemede" selected>Beklemede</option>
+                                        <option value="devam-ediyor">Devam Ediyor</option>
+                                        <option value="tamamlandı">Tamamlandı</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="bitis_tarihi">Bitiş Tarihi</label>
+                                    <input type="date" id="bitis_tarihi" name="bitis_tarihi">
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary btn-block" id="submitBtn">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 5v14M5 12h14"/>
+                                    </svg>
+                                    <span>Görev Ekle</span>
+                                </button>
+                                <button type="button" class="btn btn-secondary btn-block" id="cancelBtn" style="display: none;">İptal</button>
+                            </div>
+                            <input type="hidden" id="editTaskId" value="">
+                        </form>
+                    </section>
+                </div>
+
+                <!-- Right Column - Tasks List -->
+                <div class="app-main">
+                    <section class="card tasks-card">
+                        <div class="card-header">
+                            <h2>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 11l3 3L22 4"/>
+                                    <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+                                </svg>
+                                Görev Listesi
+                            </h2>
+                            <span class="task-count" id="taskCount">0 görev</span>
+                        </div>
+                        <!-- Inline Filters -->
+                        <div class="filters-bar">
+                            <div class="filter-item">
+                                <label>Kategori</label>
+                                <select id="filterCategory">
+                                    <option value="">Tümü</option>
+                                </select>
+                            </div>
+                            <div class="filter-item">
+                                <label>Durum</label>
+                                <select id="filterStatus">
+                                    <option value="">Tümü</option>
+                                    <option value="beklemede">Beklemede</option>
+                                    <option value="devam-ediyor">Devam Ediyor</option>
+                                    <option value="tamamlandı">Tamamlandı</option>
+                                </select>
+                            </div>
+                            <div class="filter-item">
+                                <label>Öncelik</label>
+                                <select id="filterPriority">
+                                    <option value="">Tümü</option>
+                                    <option value="düşük">Düşük</option>
+                                    <option value="orta">Orta</option>
+                                    <option value="yüksek">Yüksek</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="tasksList" class="tasks-list">
+                            <div class="loading">
+                                <div class="loading-spinner"></div>
+                                <span>Görevler yükleniyor...</span>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <a href="/" class="footer-logo">
+                        <span class="logo-icon">✓</span>
+                        <span>Görev Yöneticisi</span>
+                    </a>
+                </div>
+                <div class="footer-links">
+                    <a href="/">Ana Sayfa</a>
+                    <a href="/app">Uygulama</a>
+                    <a href="/admin">Yönetim</a>
+                </div>
+                <p class="footer-copyright">&copy; 2025 Görev Yöneticisi</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Bildirimi -->
+    <div id="toast" class="toast"></div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
